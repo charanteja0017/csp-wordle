@@ -3,7 +3,11 @@
 Loads words from NLTK corpus, checks guesses with correct duplicate-letter
 handling, and filters candidate words against CSP domain constraints.
 """
+import os
 import nltk
+
+# Vercel serverless: filesystem is read-only except /tmp
+nltk.data.path.insert(0, os.path.join('/tmp', 'nltk_data'))
 
 _CACHE = {}
 
@@ -16,7 +20,7 @@ def get_word_list(length):
     """
     if length in _CACHE:
         return _CACHE[length]
-    nltk.download('words', quiet=True)
+    nltk.download('words', quiet=True, download_dir=os.path.join('/tmp', 'nltk_data'))
     from nltk.corpus import words
     result = sorted({
         w.lower() for w in words.words()
