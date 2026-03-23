@@ -16,7 +16,9 @@ from algo.solver import initialize, next_guess, process_result, serialize_state,
 from algo.csp import get_domain_grid
 from game.words import get_word_list, check_guess
 
-app = Flask(__name__)
+_root = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder=os.path.join(_root, 'templates'),
+            static_folder=os.path.join(_root, 'static'))
 app.secret_key = 'csp-wordle-secret'
 
 MIN_LEN = 3
