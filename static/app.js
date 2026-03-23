@@ -780,3 +780,98 @@ function scrollCarousel(dir) {
 }
 
 initCarousel();
+
+/* ================================================================
+   WORD MARQUEE BACKGROUND
+   ================================================================ */
+(async function initMarquee() {
+    const container = document.getElementById('word-marquee');
+    if (!container) return;
+
+    // Fallback words if API fails
+    const fallback = [
+        'crane','brain','apple','shift','globe','plane','trick','storm','flame','grape',
+        'slice','dream','frost','light','stone','quest','blaze','charm','drift','eagle',
+        'fable','ghost','haven','ivory','jewel','knack','lunar','marsh','noble','ocean',
+        'prism','quilt','raven','solar','tiger','ultra','vivid','wager','xenon','yield',
+        'zone','bold','calm','dare','ease','fury','glow','haze','isle','jazz',
+        'abstract','brighten','creature','darkness','electron','friendly',
+        'generous','harmonic','illusion','junction','keyboard','language',
+        'magnetic','navigate','obstacle','paradigm','quantity','rational'
+    ];
+
+    let words;
+    try {
+        const resp = await fetch('/word-samples');
+        const data = await resp.json();
+        words = data.words && data.words.length > 20 ? data.words : fallback;
+    } catch(e) { words = fallback; }
+
+    const ROWS = 10;
+    const wordsPerRow = 16;
+
+    for (let r = 0; r < ROWS; r++) {
+        const row = document.createElement('div');
+        row.className = 'marquee-row ' + (r % 2 === 0 ? 'ltr' : 'rtl');
+
+        // Random speed between 25-60s
+        const speed = 25 + Math.random() * 35;
+        row.style.animationDuration = speed + 's';
+
+        // Build two copies for seamless loop
+        let html = '';
+        for (let copy = 0; copy < 2; copy++) {
+            for (let i = 0; i < wordsPerRow; i++) {
+                const w = words[Math.floor(Math.random() * words.length)];
+                // Randomly assign color class
+                const rnd = Math.random();
+                const cls = rnd < 0.08 ? ' mw-green' : rnd < 0.14 ? ' mw-yellow' : '';
+                html += '<span class="marquee-word' + cls + '">' + w + '</span>';
+            }
+        }
+        row.innerHTML = html;
+        container.appendChild(row);
+    }
+})();
+
+/* ================================================================
+   RANDOM WORD PICKER
+   ================================================================ */
+async function pickRandomWord() {
+    const btn = document.getElementById('btn-random');
+    const input = document.getElementById('secret-word');
+    if (!btn || !input) return;
+
+    // Dice spin animation
+    btn.style.pointerEvents = 'none';
+    btn.querySelector('svg').style.animation = 'diceRoll 0.4s ease';
+
+    try {
+        const resp = await fetch('/random-word');
+        const data = await resp.json();
+        const word = data.word.toUpperCase();
+
+        // Clear and typewriter effect
+        input.value = '';
+        input.classList.add('typing');
+        for (let i = 0; i < word.length; i++) {
+            await new Promise(r => setTimeout(r, 60 + Math.random() * 40));
+            input.value += word[i];
+        }
+        input.classList.remove('typing');
+
+        // Brief flash on the input
+        input.style.transition = 'box-shadow 0.3s';
+        input.parentElement.style.boxShadow = '0 0 0 4px rgba(26,92,42,0.15)';
+        setTimeout(() => { input.parentElement.style.boxShadow = ''; }, 600);
+
+    } catch(e) {
+        // Offline fallback — pick from a small set
+        const fallbacks = ['crane','brain','ghost','flame','prism','quest','blaze','tiger'];
+        const word = fallbacks[Math.floor(Math.random() * fallbacks.length)].toUpperCase();
+        input.value = word;
+    }
+
+    btn.style.pointerEvents = '';
+    btn.querySelector('svg').style.animation = '';
+}

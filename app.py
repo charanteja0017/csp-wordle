@@ -10,6 +10,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+import random
 from flask import Flask, render_template, request, jsonify, session
 from algo.solver import initialize, next_guess, process_result, serialize_state, deserialize_state
 from algo.csp import get_domain_grid
@@ -25,6 +26,26 @@ MAX_GUESSES = {4: 5, 5: 6, 6: 7, 7: 8, 8: 9}
 def index():
     """Render the main game page."""
     return render_template('index.html')
+
+
+@app.route('/random-word')
+def random_word():
+    """Return a random word of a random length (4-8)."""
+    length = random.choice([4, 5, 6, 7, 8])
+    words = get_word_list(length)
+    word = random.choice(words)
+    return jsonify({"word": word, "length": length})
+
+
+@app.route('/word-samples')
+def word_samples():
+    """Return sample words for the background marquee."""
+    samples = []
+    for length in range(4, 9):
+        words = get_word_list(length)
+        samples.extend(random.sample(words, min(30, len(words))))
+    random.shuffle(samples)
+    return jsonify({"words": samples})
 
 
 @app.route('/start', methods=['POST'])

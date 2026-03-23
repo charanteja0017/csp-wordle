@@ -21,6 +21,8 @@
 
   <!-- Hero / center input (visible before game) -->
   <div class="hero" id="hero">
+    <!-- Scrolling word marquee background -->
+    <div class="word-marquee" id="word-marquee"></div>
     <div class="hero-content">
       <!-- Title tiles serve as the grid icon now -->
       <h1 class="hero-title">
@@ -60,6 +62,16 @@
         </button>
       </div>
       <div id="error-msg" class="error-msg"></div>
+      <button class="btn-random" id="btn-random" onclick="pickRandomWord()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="1" width="8" height="8" rx="1"/><rect x="15" y="1" width="8" height="8" rx="1"/>
+          <rect x="1" y="15" width="8" height="8" rx="1"/><rect x="15" y="15" width="8" height="8" rx="1"/>
+          <circle cx="5" cy="5" r="1" fill="currentColor"/><circle cx="19" cy="5" r="1" fill="currentColor"/>
+          <circle cx="5" cy="19" r="1" fill="currentColor"/><circle cx="19" cy="19" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+        </svg>
+        <span>Random word</span>
+      </button>
       <div class="hero-hints">
         <span class="hero-hint">4-8 letters</span>
         <span class="hero-dot"></span>
