@@ -147,7 +147,7 @@ function resetGame() {
     }
 
     // 3. After game dismisses, bring hero back
-    const delay = prefersMotion ? 450 : 0;
+    const delay = prefersMotion ? 550 : 0;
     setTimeout(() => {
         // Clean up game wrapper
         gw.classList.add('hidden');
@@ -204,16 +204,16 @@ function initCytoscape() {
     const container = document.getElementById('cy');
     cy = cytoscape({ container: container, elements: [],
         style: [
-            {selector:'node', style:{'label':'data(label)','text-wrap':'wrap','text-valign':'center','text-halign':'center','font-family':'monospace','font-size':'10px','padding':'10px','shape':'round-rectangle','width':function(ele){var l=ele.data('label')||''; return Math.max(80, l.length*7+20);},'height':function(ele){var l=ele.data('label')||''; var lines=l.split('\n').length; return Math.max(30, lines*16+12);},'opacity':1}},
-            {selector:'node[type="start"]',    style:{'background-color':'#1a1a1a','color':'#888','border-width':1,'border-color':'#333'}},
-            {selector:'node[type="selected"]', style:{'background-color':'#0d2818','color':'#6ee7a0','border-width':1,'border-color':'#22543d'}},
-            {selector:'node[type="pruned"]',   style:{'background-color':'#2d1215','color':'#fca5a5','border-width':1,'border-color':'#7f1d1d'}},
-            {selector:'node[type="solved"]',   style:{'background-color':'#0d2d2d','color':'#5eead4','border-width':1,'border-color':'#115e59'}},
-            {selector:'node[type="explored"]', style:{'background-color':'#1a1a2a','color':'#8888cc','border-width':1,'border-color':'#444','border-style':'dashed','opacity':0.7,'font-size':'9px'}},
-            {selector:'edge', style:{'width':1,'line-color':'#333','target-arrow-color':'#444','target-arrow-shape':'triangle','curve-style':'bezier','label':'data(label)','font-size':'9px','color':'#555','font-family':'monospace','opacity':1}},
+            {selector:'node', style:{'label':'data(label)','text-wrap':'wrap','text-valign':'center','text-halign':'center','font-family':'monospace','font-size':'13px','padding':'14px','shape':'round-rectangle','width':function(ele){var l=ele.data('label')||''; var lines=l.split('\n'); var maxLen=Math.max(...lines.map(function(s){return s.length;})); return Math.max(100, maxLen*9+28);},'height':function(ele){var l=ele.data('label')||''; var lines=l.split('\n').length; return Math.max(40, lines*20+16);},'opacity':1}},
+            {selector:'node[type="start"]',    style:{'background-color':'#1a1a1a','color':'#999','border-width':2,'border-color':'#444','font-size':'14px'}},
+            {selector:'node[type="selected"]', style:{'background-color':'#0d2818','color':'#6ee7a0','border-width':2,'border-color':'#22543d','font-size':'14px','font-weight':'bold'}},
+            {selector:'node[type="pruned"]',   style:{'background-color':'#2d1215','color':'#fca5a5','border-width':2,'border-color':'#7f1d1d'}},
+            {selector:'node[type="solved"]',   style:{'background-color':'#0d2d2d','color':'#5eead4','border-width':2,'border-color':'#115e59','font-size':'14px','font-weight':'bold'}},
+            {selector:'node[type="explored"]', style:{'background-color':'#1a1a2a','color':'#9999dd','border-width':1,'border-color':'#555','border-style':'dashed','opacity':0.8,'font-size':'11px'}},
+            {selector:'edge', style:{'width':1.5,'line-color':'#444','target-arrow-color':'#555','target-arrow-shape':'triangle','curve-style':'bezier','label':'data(label)','font-size':'11px','color':'#777','font-family':'monospace','opacity':1}},
             {selector:'edge[id *= "_alt"]', style:{'line-style':'dashed','line-color':'#2a2a44','target-arrow-color':'#2a2a44','opacity':0.5}}
         ],
-        layout: {name:'breadthfirst', directed:true, spacingFactor:1.5},
+        layout: {name:'breadthfirst', directed:true, spacingFactor:1.8},
         userZoomingEnabled: true,
         userPanningEnabled: true
     });
@@ -671,13 +671,13 @@ function initModalGraph() {
         container: container,
         elements: elements,
         style: [
-            {selector:'node', style:{'label':'data(label)','text-wrap':'wrap','text-valign':'center','text-halign':'center','font-family':'monospace','font-size':'9px','padding':'8px','shape':'round-rectangle','width':function(ele){var l=ele.data('label')||''; return Math.max(70, l.length*6+16);},'height':function(ele){var l=ele.data('label')||''; var lines=l.split('\n').length; return Math.max(26, lines*14+10);}}},
-            {selector:'node[type="start"]',    style:{'background-color':'#1a1a1a','color':'#888','border-width':1,'border-color':'#333'}},
-            {selector:'node[type="selected"]', style:{'background-color':'#0d2818','color':'#6ee7a0','border-width':2,'border-color':'#22543d'}},
-            {selector:'node[type="pruned"]',   style:{'background-color':'#2d1215','color':'#fca5a5','border-width':1,'border-color':'#7f1d1d'}},
-            {selector:'node[type="solved"]',   style:{'background-color':'#0d2d2d','color':'#5eead4','border-width':2,'border-color':'#115e59'}},
-            {selector:'node[type="explored"]', style:{'background-color':'#1a1a2a','color':'#8888cc','border-width':1,'border-color':'#444','border-style':'dashed','opacity':0.7,'font-size':'8px'}},
-            {selector:'edge', style:{'width':1,'line-color':'#333','target-arrow-color':'#444','target-arrow-shape':'triangle','curve-style':'bezier','label':'data(label)','font-size':'8px','color':'#555','font-family':'monospace'}},
+            {selector:'node', style:{'label':'data(label)','text-wrap':'wrap','text-valign':'center','text-halign':'center','font-family':'monospace','font-size':'12px','padding':'12px','shape':'round-rectangle','width':function(ele){var l=ele.data('label')||''; var lines=l.split('\n'); var maxLen=Math.max(...lines.map(function(s){return s.length;})); return Math.max(90, maxLen*8+24);},'height':function(ele){var l=ele.data('label')||''; var lines=l.split('\n').length; return Math.max(36, lines*18+14);}}},
+            {selector:'node[type="start"]',    style:{'background-color':'#1a1a1a','color':'#999','border-width':2,'border-color':'#444'}},
+            {selector:'node[type="selected"]', style:{'background-color':'#0d2818','color':'#6ee7a0','border-width':2,'border-color':'#22543d','font-weight':'bold'}},
+            {selector:'node[type="pruned"]',   style:{'background-color':'#2d1215','color':'#fca5a5','border-width':2,'border-color':'#7f1d1d'}},
+            {selector:'node[type="solved"]',   style:{'background-color':'#0d2d2d','color':'#5eead4','border-width':2,'border-color':'#115e59','font-weight':'bold'}},
+            {selector:'node[type="explored"]', style:{'background-color':'#1a1a2a','color':'#9999dd','border-width':1,'border-color':'#555','border-style':'dashed','opacity':0.8,'font-size':'10px'}},
+            {selector:'edge', style:{'width':1.5,'line-color':'#444','target-arrow-color':'#555','target-arrow-shape':'triangle','curve-style':'bezier','label':'data(label)','font-size':'10px','color':'#777','font-family':'monospace'}},
             {selector:'edge[id *= "_alt"]', style:{'line-style':'dashed','line-color':'#2a2a44','target-arrow-color':'#2a2a44','opacity':0.5}}
         ],
         layout: {name:'breadthfirst', directed:true, spacingFactor:1.2},
