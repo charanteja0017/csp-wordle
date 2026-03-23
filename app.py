@@ -19,7 +19,13 @@ from game.words import get_word_list, check_guess
 app = Flask(__name__)
 app.secret_key = 'csp-wordle-secret'
 
-MAX_GUESSES = {4: 5, 5: 6, 6: 7, 7: 8, 8: 9}
+MIN_LEN = 3
+MAX_LEN = 15
+
+
+def max_guesses_for(length):
+    """Recommended guess limit: length + 2, minimum 5."""
+    return max(5, length + 2)
 
 
 @app.route('/')
@@ -31,8 +37,11 @@ def index():
 @app.route('/random-word')
 def random_word():
     """Return a random word of a random length (4-8)."""
-    length = random.choice([4, 5, 6, 7, 8])
+    length = random.choice(list(range(MIN_LEN, MAX_LEN + 1)))
     words = get_word_list(length)
+    if not words:
+        length = 5
+        words = get_word_list(5)
     word = random.choice(words)
     return jsonify({"word": word, "length": length})
 
@@ -41,7 +50,7 @@ def random_word():
 def word_samples():
     """Return sample words for the background marquee."""
     samples = []
-    for length in range(4, 9):
+    for length in range(MIN_LEN, MAX_LEN + 1):
         words = get_word_list(length)
         samples.extend(random.sample(words, min(30, len(words))))
     random.shuffle(samples)
@@ -59,8 +68,8 @@ def start():
     secret = data.get('secret', '').lower().strip()
     length = len(secret)
 
-    if length < 4 or length > 8:
-        return jsonify({"success": False, "error": "Word must be 4-8 letters"})
+    if length < MIN_LEN or length > MAX_LEN:
+        return jsonify({"success": False, "error": f"Word must be {MIN_LEN}-{MAX_LEN} letters"})
     if not secret.isalpha():
         return jsonify({"success": False, "error": "Word must contain only letters"})
 
@@ -74,7 +83,7 @@ def start():
 
     return jsonify({
         "success": True, "word_length": length,
-        "max_guesses": MAX_GUESSES.get(length, 6),
+        "max_guesses": max_guesses_for(length),
         "domain_grid": get_domain_grid(solver.csp),
         "prediction": _build_initial_prediction(solver),
         "start_state": {
@@ -92,7 +101,7 @@ def guess():
 
     secret = session['secret']
     length = len(secret)
-    max_g = MAX_GUESSES.get(length, 6)
+    max_g = max_guesses_for(length)
 
     solver = deserialize_state(session['state'])
     guess_word, prediction, algo_stats = next_guess(solver)
@@ -116,33 +125,33 @@ def guess():
     result = check_guess(guess_word, secret)
     solved = all(r == 'green' for r in result)
     solver = process_result(solver, guess_word, result)
-    failed = not solved and len(solver.guesses) >= max_g
+    exceeded = not solved and len(solver.guesses) >= max_g
 
     session['state'] = serialize_state(solver)
 
     end_state = None
-    if solved or failed:
+    if solved:
         session.pop('state', None)
         session.pop('secret', None)
         end_state = {
             "secret": secret, "guesses_taken": len(solver.guesses),
-            "max_guesses": max_g, "result": "solved" if solved else "failed",
+            "max_guesses": max_g, "result": "solved",
             "total_candidates_start": solver.total_start,
             "total_candidates_end": len(solver.candidates)
         }
-        if solved:
-            solver.graph_nodes.append({
-                "data": {"id": "nSolved", "label": f"Solved!\n{guess_word}",
-                         "type": "solved", "candidates": 1}
-            })
-            solver.graph_edges.append({
-                "data": {"id": f"e{solver.step}-solved",
-                         "source": f"n{solver.step}",
-                         "target": "nSolved", "label": "\u2713"}
-            })
+        solver.graph_nodes.append({
+            "data": {"id": "nSolved", "label": f"Solved!\n{guess_word}",
+                     "type": "solved", "candidates": 1}
+        })
+        solver.graph_edges.append({
+            "data": {"id": f"e{solver.step}-solved",
+                     "source": f"n{solver.step}",
+                     "target": "nSolved", "label": "\u2713"}
+        })
 
     return jsonify({
-        "guess": guess_word, "result": result, "solved": solved, "failed": failed,
+        "guess": guess_word, "result": result, "solved": solved,
+        "failed": False, "exceeded": exceeded,
         "domain_grid": get_domain_grid(solver.csp),
         "domain_sizes": [len(d) for d in solver.csp.domains],
         "candidates_remaining": len(solver.candidates),

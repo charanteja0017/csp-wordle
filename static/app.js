@@ -5,7 +5,7 @@
    flag checked before any JS-driven animation runs.
    ================================================================ */
 
-let wordLen = 5, maxGuesses = 6, guessNum = 0, gameActive = false, cy = null;
+let wordLen = 5, maxGuesses = 6, guessNum = 0, gameActive = false, cy = null, boardRows = 6;
 let prevCandidates = 0;          // for #10 candidate count roll-down
 let activeNodeId = null;         // for #7 active-node pulse
 let pulseAnim = null;            // Cytoscape animation handle
@@ -62,7 +62,7 @@ $('#secret-word').addEventListener('keydown', function(e) {
    ================================================================ */
 async function initGame() {
     const secret = $('#secret-word').value.toLowerCase().trim();
-    if (secret.length < 4 || secret.length > 8) { showError('Word must be 4-8 letters'); return; }
+    if (secret.length < 3 || secret.length > 15) { showError('Word must be 3-15 letters'); return; }
     wordLen = secret.length;
     showError('');
 
@@ -186,14 +186,40 @@ function resetGame() {
    ================================================================ */
 function buildBoard() {
     const board = $('#board'); board.innerHTML = '';
-    board.style.gridTemplateColumns = 'repeat(' + wordLen + ', 52px)';
-    for (let r = 0; r < maxGuesses; r++)
+    // Scale cells down for longer words
+    const cellSize = wordLen <= 8 ? 52 : wordLen <= 11 ? 40 : 32;
+    const fontSize = wordLen <= 8 ? 20 : wordLen <= 11 ? 16 : 13;
+    board.style.gridTemplateColumns = 'repeat(' + wordLen + ', ' + cellSize + 'px)';
+    board.dataset.cellSize = cellSize;
+    board.dataset.fontSize = fontSize;
+    boardRows = maxGuesses;
+    for (let r = 0; r < boardRows; r++)
         for (let c = 0; c < wordLen; c++) {
             const cell = document.createElement('div');
             cell.className = 'cell' + (r === 0 ? ' active-row' : '');
             cell.id = 'c' + r + '-' + c;
+            cell.style.width = cellSize + 'px';
+            cell.style.height = cellSize + 'px';
+            cell.style.fontSize = fontSize + 'px';
             board.appendChild(cell);
         }
+}
+
+function addBoardRow() {
+    const board = $('#board');
+    const cellSize = parseInt(board.dataset.cellSize) || 52;
+    const fontSize = parseInt(board.dataset.fontSize) || 20;
+    const r = boardRows;
+    for (let c = 0; c < wordLen; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = 'c' + r + '-' + c;
+        cell.style.width = cellSize + 'px';
+        cell.style.height = cellSize + 'px';
+        cell.style.fontSize = fontSize + 'px';
+        board.appendChild(cell);
+    }
+    boardRows++;
 }
 
 /* ================================================================
@@ -289,13 +315,13 @@ async function nextGuess() {
             cellAnimDuration += wordLen * 80 + 500;
         }
 
-        // Activate next row
-        if (guessNum + 1 < maxGuesses)
-            for (let i = 0; i < wordLen; i++) {
-                const nc = $('#c'+(guessNum+1)+'-'+i);
-                if (nc) nc.classList.add('active-row');
-            }
+        // Activate next row — add new row if needed
         guessNum++;
+        if (guessNum >= boardRows) addBoardRow();
+        for (let i = 0; i < wordLen; i++) {
+            const nc = $('#c'+guessNum+'-'+i);
+            if (nc) nc.classList.add('active-row');
+        }
     }
 
     // --- Delay rest of UI until cell animation finishes ---
@@ -308,7 +334,10 @@ async function nextGuess() {
         // #10 — candidate count roll-down
         const newCands = data.candidates_remaining || 0;
         const statusEl = $('#status-line');
-        statusEl.textContent = 'Guess ' + guessNum + '/' + maxGuesses + ' \u00b7 ' + wordLen + ' letters \u00b7 ';
+        const guessLabel = guessNum > maxGuesses
+            ? 'Guess ' + guessNum + ' (limit was ' + maxGuesses + ')'
+            : 'Guess ' + guessNum + '/' + maxGuesses;
+        statusEl.textContent = guessLabel + ' \u00b7 ' + wordLen + ' letters \u00b7 ';
         const countSpan = document.createElement('span');
         countSpan.id = 'cand-count';
         statusEl.appendChild(countSpan);
@@ -318,11 +347,26 @@ async function nextGuess() {
 
         if (data.algo_stats) updateAlgoStats(data.algo_stats);
 
-        if (data.solved || data.failed) {
+        // Show exceeded warning but keep going
+        if (data.exceeded && !data.solved) {
+            const statusEl = $('#status-line');
+            statusEl.innerHTML = '<span style="color:#991b1b">Exceeded ' + maxGuesses + ' guesses — still searching...</span> \u00b7 ';
+            const countSpan2 = document.createElement('span');
+            statusEl.appendChild(countSpan2);
+            countSpan2.textContent = (data.candidates_remaining || 0) + ' candidates';
+        }
+
+        if (data.solved) {
             gameActive = false;
             btn.disabled = true;
             showEndState(data.end_state);           // #11 #12
             // Show summary modal after a short delay for end card to animate
+            setTimeout(() => showSummaryModal(data.end_state, lastTrace), 800);
+        } else if (data.failed) {
+            // Only if solver ran out of candidates entirely
+            gameActive = false;
+            btn.disabled = true;
+            showEndState(data.end_state);
             setTimeout(() => showSummaryModal(data.end_state, lastTrace), 800);
         } else {
             btn.disabled = false;

@@ -11,7 +11,11 @@ import math
 from game.words import compute_pattern
 
 # Precomputed high-entropy openers chosen for maximum letter coverage
-_OPENERS = {4: "sale", 5: "crane", 6: "plains", 7: "strange", 8: "strained"}
+_OPENERS = {
+    3: "are", 4: "sale", 5: "crane", 6: "plains", 7: "strange", 8: "strained",
+    9: "relations", 10: "speculator", 11: "personality", 12: "appreciation",
+    13: "communicative", 14: "characteristic", 15: "representations"
+}
 
 
 def get_opener(length):
