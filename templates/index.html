@@ -135,17 +135,18 @@
     </div>
   </div>
 
-  <!-- AI Concepts Reference - Minimalist Carousel -->
+  <!-- AI Concepts Reference — Fade Carousel -->
   <div class="concepts-section minimalist-carousel-section">
     <div class="carousel-header">
       <div class="concepts-header-title">AI foundations used in this solver</div>
       <div class="carousel-nav">
-        <button class="carousel-btn" onclick="scrollCarousel(-1)" aria-label="Previous">
+        <span class="carousel-counter" id="carousel-counter">01 / 14</span>
+        <button class="carousel-btn" onclick="fadeCarousel(-1)" aria-label="Previous">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <button class="carousel-btn" onclick="scrollCarousel(1)" aria-label="Next">
+        <button class="carousel-btn" onclick="fadeCarousel(1)" aria-label="Next">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M9 5l7 7-7 7"></path>
           </svg>
@@ -153,19 +154,17 @@
       </div>
     </div>
 
-    <div class="carousel-container" id="concepts-carousel">
+    <div class="fade-carousel" id="concepts-carousel">
 
       <!-- 01 -->
-      <div class="carousel-slide cat-purple">
+      <div class="fade-slide active cat-purple">
         <div class="slide-content">
           <div class="cat-label">Core framework &mdash; constraint satisfaction</div>
           <div class="slide-title-area">
             <span class="concept-num">01</span>
             <h3 class="slide-title">Constraint satisfaction problem</h3>
           </div>
-          <p class="slide-desc">The entire solver is modeled as a CSP. Variables = letter positions (P0..Pn). Domains =
-            possible letters {a-z} at each position. Constraints = rules from green/yellow/grey feedback. Solving =
-            finding an assignment of letters to all positions satisfying every constraint.</p>
+          <p class="slide-desc">The solver reformulates Wordle as a classic CSP &lang;X, D, C&rang;. Variables X = {P<sub>0</sub>, P<sub>1</sub>, &hellip;, P<sub>n-1</sub>} represent each letter slot. Domains D(P<sub>i</sub>) &sube; {a&ndash;z} hold the currently legal letters per position. Constraints C encode every piece of feedback: exact matches (green), misplaced letters (yellow), and absent letters (grey). A solution is a complete assignment &sigma;: X &rarr; D that satisfies all constraints simultaneously &mdash; i.e., a valid candidate word. This formulation unlocks the entire CSP algorithmic toolkit: propagation, arc consistency, heuristic ordering, and backtracking &mdash; turning a word game into a rigorous search problem.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/csp.py</span>
             <span class="aima">AIMA Ch. 6</span>
@@ -174,16 +173,14 @@
       </div>
 
       <!-- 02 -->
-      <div class="carousel-slide cat-purple">
+      <div class="fade-slide cat-purple">
         <div class="slide-content">
-          <div class="cat-label">Core framework</div>
+          <div class="cat-label">Core framework &mdash; constraint satisfaction</div>
           <div class="slide-title-area">
             <span class="concept-num">02</span>
             <h3 class="slide-title">Constraint propagation</h3>
           </div>
-          <p class="slide-desc">Instead of brute-force checking, constraints actively shrink domains. Green fixes a
-            letter. Yellow removes it from one position but ensures it exists elsewhere. Grey removes it globally. Each
-            constraint propagates consequences to all related variables.</p>
+          <p class="slide-desc">Rather than passively storing constraints and checking them during search, the solver actively propagates their consequences to shrink variable domains before any guessing begins. A green clue collapses D(P<sub>i</sub>) to a singleton {c}. A yellow clue removes c from D(P<sub>i</sub>) while adding a global &ldquo;must-contain&rdquo; constraint guaranteeing c appears in at least one other slot. A grey clue eliminates c from every position's domain (unless another instance is green/yellow). Crucially, these propagations cascade: shrinking one domain may trigger further eliminations in neighboring variables, producing a fixpoint &mdash; a maximally reduced state before any search is invoked. This often cuts the candidate list by 80&ndash;95% after a single guess.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/csp.py &rarr; apply_constraints()</span>
             <span class="aima">AIMA Ch. 6.2</span>
@@ -192,16 +189,14 @@
       </div>
 
       <!-- 03 -->
-      <div class="carousel-slide cat-teal">
+      <div class="fade-slide cat-teal">
         <div class="slide-content">
           <div class="cat-label">Search techniques</div>
           <div class="slide-title-area">
             <span class="concept-num">03</span>
             <h3 class="slide-title">Backtracking search</h3>
           </div>
-          <p class="slide-desc">Depth-first search that assigns one variable at a time and backtracks when a constraint
-            is violated. Explores the search tree by trying a letter at a position, checking consistency, and undoing
-            (backtracking) if it leads to a dead end. Guarantees completeness.</p>
+          <p class="slide-desc">The backbone search strategy is depth-first backtracking over the CSP's assignment space. It assigns one variable at a time &mdash; choosing a letter c &isin; D(P<sub>i</sub>) &mdash; then checks whether the partial assignment is consistent with all active constraints. If consistent, it recurses to the next unassigned variable; if not, it backtracks, undoing the assignment and trying the next value. This avoids the combinatorial explosion of generate-and-test (which would need to enumerate up to 26<sup>n</sup> assignments). Backtracking guarantees completeness &mdash; if a valid word exists, the solver will find it &mdash; and its efficiency depends heavily on the heuristics (MRV, LCV, forward checking) layered on top, which reduce the effective branching factor from ~26 to often &lt;3.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/backtracking.py</span>
             <span class="aima">AIMA Ch. 6.3</span>
@@ -210,34 +205,30 @@
       </div>
 
       <!-- 04 -->
-      <div class="carousel-slide cat-teal">
+      <div class="fade-slide cat-teal">
         <div class="slide-content">
           <div class="cat-label">Search techniques</div>
           <div class="slide-title-area">
             <span class="concept-num">04</span>
-            <h3 class="slide-title">Informed search / heuristic</h3>
+            <h3 class="slide-title">Informed search &amp; heuristic evaluation</h3>
           </div>
-          <p class="slide-desc">The solver doesn't guess blindly. It uses entropy as a heuristic to evaluate which word
-            to guess next &mdash; analogous to how A* uses h(n) to pick the most promising node. The cost here is
-            expected remaining candidates after the guess.</p>
+          <p class="slide-desc">The solver doesn't pick guesses at random &mdash; it uses Shannon entropy as a heuristic evaluation function, analogous to how A* search uses h(n) to prioritize the most promising frontier node. For each candidate guess g, the solver computes the expected information gain: how evenly g partitions the remaining candidate set across all 3<sup>n</sup> possible feedback patterns. A guess that creates many small, equally-sized partitions has high entropy &asymp; high discriminative power. This transforms the &ldquo;which word next?&rdquo; decision from blind trial-and-error into a principled best-first selection, consistently reducing the expected solve depth from 5&ndash;6 guesses (random) to 3&ndash;4 (entropy-guided).</p>
           <div class="slide-footer">
             <span class="file-badge">algo/entropy.py &rarr; rank_guesses()</span>
-            <span class="aima">AIMA Ch. 3.5-3.6</span>
+            <span class="aima">AIMA Ch. 3.5&ndash;3.6</span>
           </div>
         </div>
       </div>
 
       <!-- 05 -->
-      <div class="carousel-slide cat-blue">
+      <div class="fade-slide cat-blue">
         <div class="slide-content">
           <div class="cat-label">Variable &amp; value ordering</div>
           <div class="slide-title-area">
             <span class="concept-num">05</span>
             <h3 class="slide-title">Minimum remaining values (MRV)</h3>
           </div>
-          <p class="slide-desc">Fail-first strategy. Always pick the variable (letter position) with the fewest
-            remaining domain values. If P3 has only {a, e} while P0 has {a-z}, assign P3 first. Failures surface early,
-            pruning more of the search tree, exponentially fewer nodes explored.</p>
+          <p class="slide-desc">Also called the fail-first heuristic. When selecting which variable to assign next during backtracking, always pick the position P<sub>i</sub> with the smallest |D(P<sub>i</sub>)|. Intuition: if P<sub>3</sub> has only {a, e} while P<sub>0</sub> still has 18 candidates, assigning P<sub>3</sub> first means we'll discover a dead end (if one exists) after at most 2 branches &mdash; not 18. This exponentially reduces the number of nodes explored by ensuring failures surface at shallow depths. In practice, MRV combined with constraint propagation often reduces backtracking to near-zero for typical Wordle states, because the tightly constrained positions get resolved first and cascade domain reductions to the rest.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/backtracking.py &rarr; select_variable_mrv()</span>
             <span class="aima">AIMA Ch. 6.3.1</span>
@@ -246,16 +237,14 @@
       </div>
 
       <!-- 06 -->
-      <div class="carousel-slide cat-blue">
+      <div class="fade-slide cat-blue">
         <div class="slide-content">
           <div class="cat-label">Variable &amp; value ordering</div>
           <div class="slide-title-area">
             <span class="concept-num">06</span>
             <h3 class="slide-title">Least constraining value (LCV)</h3>
           </div>
-          <p class="slide-desc">Fail-last for values. When choosing which letter to try at a position, prefer the letter
-            that eliminates the fewest options from other positions' domains. This maximizes the chance that remaining
-            variables can still be assigned without backtracking.</p>
+          <p class="slide-desc">The fail-last principle for value ordering &mdash; the complement of MRV. Once we've selected which position to assign (via MRV), we must decide which letter to try first. LCV scores each candidate letter c by counting how many values it would eliminate from neighboring variables' domains if assigned. We try the letter that rules out the fewest options elsewhere first. Why? If we're going to succeed, we want to maximize the flexibility left for unassigned positions, giving them the best chance of finding a consistent value without backtracking. MRV asks &ldquo;where is failure most likely?&rdquo; and goes there first; LCV asks &ldquo;which choice is most likely to succeed?&rdquo; and tries it first. Together, they prune the tree from both ends.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/backtracking.py &rarr; order_values_lcv()</span>
             <span class="aima">AIMA Ch. 6.3.1</span>
@@ -264,15 +253,14 @@
       </div>
 
       <!-- 07 -->
-      <div class="carousel-slide cat-blue">
+      <div class="fade-slide cat-blue">
         <div class="slide-content">
           <div class="cat-label">Variable &amp; value ordering</div>
           <div class="slide-title-area">
             <span class="concept-num">07</span>
             <h3 class="slide-title">Degree heuristic</h3>
           </div>
-          <p class="slide-desc">When two variables have equal MRV, pick the one involved in the most constraints. More
-            constrained positions are harder to satisfy, so resolving them first avoids deep backtracking later.</p>
+          <p class="slide-desc">A tiebreaker for MRV. When two or more positions share the same smallest domain size, the degree heuristic selects the one involved in the most active constraints with other unassigned variables. A position constrained by multiple yellow/green interactions with other slots is harder to satisfy downstream &mdash; resolving it early propagates more information and avoids deep, wasted backtracking branches. In Wordle terms: if P<sub>1</sub> and P<sub>4</sub> both have |D| = 3, but P<sub>1</sub> participates in a &ldquo;must-contain&rdquo; constraint, a &ldquo;not-duplicate&rdquo; constraint, and an arc-consistency constraint with P<sub>2</sub>, while P<sub>4</sub> has only one constraint &mdash; assign P<sub>1</sub> first. Degree + MRV together implement a robust variable-ordering policy that minimizes expected tree size.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/backtracking.py</span>
             <span class="aima">AIMA Ch. 6.3.1</span>
@@ -281,16 +269,14 @@
       </div>
 
       <!-- 08 -->
-      <div class="carousel-slide cat-amber">
+      <div class="fade-slide cat-amber">
         <div class="slide-content">
           <div class="cat-label">Pruning &amp; consistency</div>
           <div class="slide-title-area">
             <span class="concept-num">08</span>
             <h3 class="slide-title">Forward checking</h3>
           </div>
-          <p class="slide-desc">After every assignment, immediately check all connected unassigned variables and remove
-            inconsistent values from their domains. If any domain becomes empty, backtrack NOW &mdash; don't wait to
-            discover the failure later. Catches dead ends one step ahead.</p>
+          <p class="slide-desc">A lightweight look-ahead strategy that catches dead ends one step before they happen. Immediately after assigning P<sub>i</sub> = c, forward checking inspects every unassigned variable P<sub>j</sub> that shares a constraint with P<sub>i</sub> and removes any value from D(P<sub>j</sub>) that is now inconsistent with the assignment. If any D(P<sub>j</sub>) becomes empty (&empty;), we know the current path is unsolvable &mdash; backtrack immediately without exploring further. This avoids the &ldquo;thrashing&rdquo; behavior of naive backtracking, where an inconsistency at depth k isn't discovered until depth k+3. Forward checking is O(n &middot; d) per assignment but saves exponential work by preventing doomed subtrees from ever being entered. It's the minimum viable pruning &mdash; cheap, effective, and always on.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/forward_check.py</span>
             <span class="aima">AIMA Ch. 6.3.2</span>
@@ -299,16 +285,14 @@
       </div>
 
       <!-- 09 -->
-      <div class="carousel-slide cat-amber">
+      <div class="fade-slide cat-amber">
         <div class="slide-content">
           <div class="cat-label">Pruning &amp; consistency</div>
           <div class="slide-title-area">
             <span class="concept-num">09</span>
             <h3 class="slide-title">AC-3 arc consistency</h3>
           </div>
-          <p class="slide-desc">Stronger than forward checking. For every arc (Pi, Pj), ensure every value in Pi's
-            domain has a supporting value in Pj's domain. If not, remove it. When a domain changes, re-queue affected
-            arcs. Reaches a fixpoint where remaining values are pairwise consistent.</p>
+          <p class="slide-desc">A stronger consistency enforcement than forward checking, operating on all variable pairs, not just those adjacent to the latest assignment. AC-3 maintains a queue of arcs (P<sub>i</sub>, P<sub>j</sub>). For each arc, it checks: does every value a &isin; D(P<sub>i</sub>) have at least one supporting value b &isin; D(P<sub>j</sub>) such that the pair (a, b) satisfies all constraints between P<sub>i</sub> and P<sub>j</sub>? If not, a is removed from D(P<sub>i</sub>). Whenever a domain shrinks, all arcs pointing into that variable are re-queued for re-examination. The algorithm terminates at a fixpoint &mdash; a state where every remaining value is pairwise consistent. Worst-case complexity is O(n<sup>2</sup>d<sup>3</sup>), but in practice it converges quickly on Wordle's small (n=5) problem and often eliminates values that forward checking alone would miss.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/ac3.py</span>
             <span class="aima">AIMA Ch. 6.2.2</span>
@@ -317,16 +301,14 @@
       </div>
 
       <!-- 10 -->
-      <div class="carousel-slide cat-amber">
+      <div class="fade-slide cat-amber">
         <div class="slide-content">
           <div class="cat-label">Pruning &amp; consistency</div>
           <div class="slide-title-area">
             <span class="concept-num">10</span>
-            <h3 class="slide-title">Singleton propagation</h3>
+            <h3 class="slide-title">Singleton propagation (unit propagation)</h3>
           </div>
-          <p class="slide-desc">When forward checking reduces a domain to exactly 1 letter, treat it as a forced
-            assignment and propagate. This can trigger a chain reaction: fixing P2='r' removes 'r' from P0..P4 &mdash;
-            if P4 drops to 1 value, propagate again. Reaches fixpoint.</p>
+          <p class="slide-desc">Inspired by unit propagation in SAT solvers. When any consistency technique (forward checking or AC-3) reduces a domain to exactly one value &mdash; |D(P<sub>i</sub>)| = 1 &mdash; that value is a forced assignment. Singleton propagation treats it as decided and immediately propagates its consequences: removing the assigned letter from all other positions' domains (since Wordle answers don't repeat letters, or applying appropriate duplicate-handling constraints if they do). This can trigger a chain reaction: fixing P<sub>2</sub> = 'r' shrinks D(P<sub>0</sub>) and D(P<sub>4</sub>); if D(P<sub>4</sub>) drops to 1, it propagates again. The cascade continues until a fixpoint is reached &mdash; sometimes solving multiple positions for free without ever invoking backtracking. This is the solver's most satisfying optimization to watch in the domain grid.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/forward_check.py</span>
             <span class="aima">AIMA Ch. 6.2</span>
@@ -335,16 +317,14 @@
       </div>
 
       <!-- 11 -->
-      <div class="carousel-slide cat-amber">
+      <div class="fade-slide cat-amber">
         <div class="slide-content">
           <div class="cat-label">Pruning &amp; consistency</div>
           <div class="slide-title-area">
             <span class="concept-num">11</span>
-            <h3 class="slide-title">Domain filtering</h3>
+            <h3 class="slide-title">Domain filtering (candidate pruning)</h3>
           </div>
-          <p class="slide-desc">The candidate word list is continuously filtered to only words where every letter at
-            every position is still in that position's domain. Impossible words are pruned without ever being explored.
-          </p>
+          <p class="slide-desc">After every round of constraint propagation and consistency enforcement, the solver performs a full pass over the candidate word list. A word w = c<sub>0</sub>c<sub>1</sub>&hellip;c<sub>n-1</sub> survives only if c<sub>i</sub> &isin; D(P<sub>i</sub>) for every position i. This is a direct application of the CSP domains as a filter &mdash; any word containing even one letter that has been eliminated from its position's domain is immediately discarded. The filtering is O(|W| &times; n) where |W| is the current word list size, and it typically shrinks the candidate pool by 60&ndash;95% per guess round. Combined with propagation, it ensures backtracking search only ever considers words that are domain-consistent &mdash; a necessary (though not sufficient) condition for being the answer.</p>
           <div class="slide-footer">
             <span class="file-badge">game/words.py &rarr; filter_candidates()</span>
             <span class="aima">AIMA Ch. 6.1</span>
@@ -353,80 +333,77 @@
       </div>
 
       <!-- 12 -->
-      <div class="carousel-slide cat-green">
+      <div class="fade-slide cat-green">
         <div class="slide-content">
           <div class="cat-label">Information theory</div>
           <div class="slide-title-area">
             <span class="concept-num">12</span>
             <h3 class="slide-title">Shannon entropy maximization</h3>
           </div>
-          <p class="slide-desc">For each candidate guess, compute H = -sum(p * log2(p)). A guess that splits candidates
-            into many equally-sized groups has high entropy = high information gain. This is THE key to solving in 3-4
-            guesses instead of 5-6.</p>
+          <p class="slide-desc">The information-theoretic heart of the solver's guess selection. For each candidate guess g, compute the entropy of the feedback distribution: H(g) = &minus;&sum; p<sub>k</sub> &middot; log<sub>2</sub>(p<sub>k</sub>), where p<sub>k</sub> is the fraction of remaining candidates that would produce feedback pattern k. High entropy means the guess splits the candidate pool into many nearly equal groups &mdash; each outcome carries maximum information, like a perfectly balanced binary tree. Low entropy means most candidates cluster into one or two feedback patterns &mdash; the guess is uninformative. The solver always selects the highest-entropy guess, directly optimizing the expected bits of information gained per turn. This is the single most impactful technique: it's the difference between average solve depths of ~3.5 (entropy-optimal) vs ~5.5 (random selection). Grounded in Shannon's 1948 mathematical theory of communication.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/entropy.py &rarr; compute_entropy()</span>
-            <span class="aima">Shannon 1948</span>
+            <span class="aima">Shannon 1948 &middot; Cover &amp; Thomas Ch. 2</span>
           </div>
         </div>
       </div>
 
       <!-- 13 -->
-      <div class="carousel-slide cat-green">
+      <div class="fade-slide cat-green">
         <div class="slide-content">
           <div class="cat-label">Information theory</div>
           <div class="slide-title-area">
             <span class="concept-num">13</span>
-            <h3 class="slide-title">Pattern space simulation</h3>
+            <h3 class="slide-title">Pattern space simulation (one-step lookahead)</h3>
           </div>
-          <p class="slide-desc">For each candidate guess, simulate ALL possible feedback outcomes (3^n patterns for n
-            letters). This is a one-level lookahead, similar to minimax without an adversary. The solver imagines every
-            response and picks the guess with the best average outcome.</p>
+          <p class="slide-desc">To compute entropy, the solver must first build the feedback distribution for each guess. For a candidate guess g and each remaining answer a, it simulates the Wordle comparison function to produce a feedback pattern &mdash; a string of green/yellow/grey signals. With n letter positions, there are 3<sup>n</sup> theoretically possible patterns (243 for n=5). The solver groups all remaining candidates by the pattern they'd produce, yielding a probability distribution {p<sub>1</sub>, p<sub>2</sub>, &hellip;, p<sub>m</sub>} over observed patterns. This is conceptually a one-level lookahead, akin to minimax without an adversary: &ldquo;If I guess g, and the world responds with pattern k, how many candidates remain?&rdquo; The guess that minimizes the expected surviving candidate count (equivalently, maximizes entropy) is chosen. The simulation is O(|W|<sup>2</sup> &times; n) in the worst case but is heavily optimized via early termination and pattern caching.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/entropy.py &rarr; compute_pattern_distribution()</span>
-            <span class="aima">AIMA Ch. 5</span>
+            <span class="aima">AIMA Ch. 5 (adversarial search analogy)</span>
           </div>
         </div>
       </div>
 
       <!-- 14 -->
-      <div class="carousel-slide cat-coral">
+      <div class="fade-slide cat-coral">
         <div class="slide-content">
           <div class="cat-label">State space &amp; search formalism</div>
           <div class="slide-title-area">
             <span class="concept-num">14</span>
             <h3 class="slide-title">Search tree visualization</h3>
           </div>
-          <p class="slide-desc">The Cytoscape graph renders the actual search tree: root = start state, each node = a
-            guess state with its candidate count, edges = constraints applied. Green path = selected, red = pruned
-            branches, teal = goal node. This IS the search tree from the textbook made visible.</p>
+          <p class="slide-desc">The Cytoscape.js graph renders the solver's actual search tree as an interactive directed graph. The root node represents the initial state (full candidate list, unconstrained domains). Each child node represents the state after a guess + feedback round: its label shows the guessed word, remaining candidate count, and domain sizes. Edges encode the constraints applied between states (color-coded feedback). The green path traces the solver's chosen trajectory. Red branches show pruned/rejected alternatives. The teal node marks the goal state (answer found, |candidates| = 1). This is the textbook search tree from AIMA Ch. 3.3 made tangible &mdash; you can click nodes, trace decisions, and see exactly how constraint propagation + entropy ranking navigated the space from ~2,300 candidates to a single answer in 3&ndash;4 steps.</p>
           <div class="slide-footer">
             <span class="file-badge">algo/solver.py</span>
-            <span class="aima">AIMA Ch. 3.3</span>
+            <span class="aima">AIMA Ch. 3.3 &middot; Ch. 6.5</span>
           </div>
         </div>
       </div>
 
-    </div> <!-- end carousel container -->
+    </div> <!-- end fade carousel -->
 
-  <div class="carousel-indicators" id="carousel-indicators"></div>
+    <div class="carousel-indicators" id="carousel-indicators"></div>
 
-  <div class="pipeline">
-      <span class="pill" style="background:#E1F5EE;color:#085041">AC-3</span><span class="arrow">&rarr;</span>
-      <span class="pill" style="background:#EAF3DE;color:#27500A">Entropy ranking</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#E6F1FB;color:#0C447C">Backtracking+MRV+LCV</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#EEEDFE;color:#3C3489">Guess chosen</span><span class="arrow">&rarr;</span>
-      <span class="pill" style="background:#FAEEDA;color:#633806">Feedback received</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#EEEDFE;color:#3C3489">Constraints applied</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#FAEEDA;color:#633806">Forward check+singleton</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#E1F5EE;color:#085041">AC-3 again</span><span class="arrow">&rarr;</span>
-      <span class="pill" style="background:#FAECE7;color:#712B13">Filter candidates</span><span
-        class="arrow">&rarr;</span>
-      <span class="pill" style="background:#f5f5f5;color:#555">Repeat</span>
+    <div class="pipeline">
+      <span class="pip-step"><span class="pip-num">1</span>AC-3 arc consistency</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">2</span>Entropy-ranked guess selection</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">3</span>Backtracking + MRV + LCV</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">4</span>Optimal guess chosen</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">5</span>Feedback received (G/Y/&empty;)</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">6</span>Constraints propagated</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">7</span>Forward check + singleton cascade</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">8</span>AC-3 re-enforcement</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step"><span class="pip-num">9</span>Domain-filtered candidates</span>
+      <span class="pip-arrow">&rarr;</span>
+      <span class="pip-step pip-repeat"><span class="pip-num">&circlearrowright;</span>Repeat until |W| = 1</span>
     </div>
   </div>
 

@@ -426,29 +426,39 @@ body.game-started .logo { opacity:1; }
 .narrow-bar .fill.green { background:#166534; }
 .narrow-bar .fill.red { background:#991b1b; }
 
-/* ---- AI Concepts Reference - Minimalist Carousel ---- */
+/* ---- AI Concepts Reference — Fade Carousel ---- */
 .minimalist-carousel-section {
-  padding: 40px 24px;
+  padding: 48px 24px 40px;
   border-top: 1px solid rgba(0,0,0,0.06);
-  background: #fafafa;
+  background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
   overflow: hidden;
 }
 .carousel-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .concepts-header-title {
   font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(0,0,0,0.5);
+  letter-spacing: 1.5px;
+  color: rgba(0,0,0,0.45);
   font-weight: 600;
 }
 .carousel-nav {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+}
+.carousel-counter {
+  font-family: monospace;
+  font-size: 12px;
+  color: rgba(0,0,0,0.35);
+  font-weight: 600;
+  letter-spacing: 1px;
+  min-width: 56px;
+  text-align: center;
 }
 .carousel-btn {
   background: #fff;
@@ -471,62 +481,77 @@ body.game-started .logo { opacity:1; }
   transform: scale(1.05);
 }
 
-.carousel-container {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding-bottom: 12px;
-  -webkit-overflow-scrolling: touch;
+/* Fade carousel container — stacked slides */
+.fade-carousel {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
 }
-/* Hide scrollbar for a cleaner look */
-.carousel-container::-webkit-scrollbar {
-  display: none;
-}
-.carousel-container {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.carousel-slide {
-  flex: 0 0 100%;
-  scroll-snap-align: start;
+@media(max-width:600px) { .fade-carousel { min-height: 520px; } }
+.fade-slide {
+  position: absolute;
+  inset: 0;
   background: #fff;
-  border-radius: 12px;
-  padding: 32px;
+  border-radius: 14px;
+  padding: 36px 32px;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.carousel-slide:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+.fade-slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  position: relative;
 }
+.fade-slide.exit-left {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.fade-slide.exit-right {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* Category accent strips */
+.fade-slide.cat-purple { border-left: 3px solid #6C63FF; }
+.fade-slide.cat-teal   { border-left: 3px solid #14B8A6; }
+.fade-slide.cat-blue   { border-left: 3px solid #3B82F6; }
+.fade-slide.cat-amber  { border-left: 3px solid #F59E0B; }
+.fade-slide.cat-green  { border-left: 3px solid #22C55E; }
+.fade-slide.cat-coral  { border-left: 3px solid #EF4444; }
 
 .carousel-indicators {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 24px;
+  gap: 6px;
+  margin-top: 28px;
 }
 .carousel-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.12);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  padding: 0;
 }
 .carousel-dot:hover {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.25);
+  transform: scale(1.2);
 }
 .carousel-dot.active {
   background: #111;
-  transform: scale(1.3);
+  width: 24px;
+  border-radius: 4px;
 }
 
 .slide-content {
@@ -536,52 +561,57 @@ body.game-started .logo { opacity:1; }
 }
 .cat-label {
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   font-size: 10px;
   color: rgba(0,0,0,0.4);
   margin-bottom: 16px;
+  font-weight: 500;
 }
 .slide-title-area {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 .concept-num {
   font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 5px;
   font-family: monospace;
+  flex-shrink: 0;
 }
 .slide-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   line-height: 1.3;
   color: #111;
 }
 .slide-desc {
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.75;
   color: #444;
   flex-grow: 1;
   margin-bottom: 24px;
 }
+.slide-desc sub { font-size: 0.75em; }
+.slide-desc sup { font-size: 0.75em; }
 .slide-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0,0,0,0.06);
   padding-top: 14px;
 }
 .file-badge {
   font-size: 11px;
   font-family: monospace;
-  background: #f5f5f5;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 5px;
   color: #555;
+  border: 1px solid rgba(0,0,0,0.04);
 }
 .aima {
   font-size: 11px;
@@ -589,7 +619,7 @@ body.game-started .logo { opacity:1; }
   color: rgba(0,0,0,0.3);
 }
 
-/* Category colours for modern minimalist slides */
+/* Category colours for concept numbers */
 .cat-purple .concept-num { background:#EEEDFE; color:#3C3489; }
 .cat-teal .concept-num   { background:#E1F5EE; color:#085041; }
 .cat-blue .concept-num   { background:#E6F1FB; color:#0C447C; }
@@ -597,10 +627,49 @@ body.game-started .logo { opacity:1; }
 .cat-green .concept-num  { background:#EAF3DE; color:#27500A; }
 .cat-coral .concept-num  { background:#FAECE7; color:#712B13; }
 
-/* Pipeline flow */
-.pipeline { display:flex; align-items:center; flex-wrap:wrap; gap:4px; padding:12px 16px; background:#fafafa; border-radius:6px; margin-top:16px; font-size:11px; font-family:monospace; }
-.pipeline .pill { padding:3px 8px; border-radius:4px; }
-.pipeline .arrow { color:rgba(0,0,0,0.25); }
+/* Pipeline flow — numbered steps */
+.pipeline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  margin-top: 24px;
+  font-size: 11px;
+  font-family: monospace;
+}
+.pip-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: #f5f5f5;
+  color: #333;
+  white-space: nowrap;
+}
+.pip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.pip-arrow { color: rgba(0,0,0,0.2); font-size: 13px; }
+.pip-repeat {
+  background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
+  font-weight: 600;
+}
+.pip-repeat .pip-num { background: #555; }
 
 .hidden { display:none !important; }
 .error-msg { color:#991b1b; font-size:13px; padding:8px 0; text-align:center; }

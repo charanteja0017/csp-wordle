@@ -786,41 +786,102 @@ function showError(msg) {
 /* ================================================================
    MINIMALIST CAROUSEL SCROLL & INDICATORS
    ================================================================ */
+/* ================================================================
+   FADE CAROUSEL — AI Concepts
+   ================================================================ */
+var _carouselIdx = 0;
+var _carouselAnimating = false;
+
 function initCarousel() {
-    const container = $('#concepts-carousel');
-    const indicatorsWrap = $('#carousel-indicators');
+    var container = $('#concepts-carousel');
+    var indicatorsWrap = $('#carousel-indicators');
     if (!container || !indicatorsWrap) return;
 
-    const slides = container.querySelectorAll('.carousel-slide');
-    
-    // Generate dots
-    slides.forEach((_, i) => {
-        const dot = document.createElement('div');
-        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-        dot.onclick = () => {
-            const slideWidth = container.clientWidth;
-            container.scrollTo({ left: i * (slideWidth + 20), behavior: 'smooth' });
-        };
-        indicatorsWrap.appendChild(dot);
-    });
+    var slides = container.querySelectorAll('.fade-slide');
 
-    // Update dots on scroll
-    container.addEventListener('scroll', () => {
-        const slideWidth = container.clientWidth + 20;
-        const index = Math.round(container.scrollLeft / slideWidth);
-        const dots = indicatorsWrap.querySelectorAll('.carousel-dot');
-        dots.forEach((dot, i) => {
-            if (i === index) dot.classList.add('active');
-            else dot.classList.remove('active');
-        });
+    // Generate indicator dots
+    for (var i = 0; i < slides.length; i++) {
+        (function(idx) {
+            var dot = document.createElement('div');
+            dot.className = 'carousel-dot' + (idx === 0 ? ' active' : '');
+            dot.onclick = function() { goToSlide(idx); };
+            indicatorsWrap.appendChild(dot);
+        })(i);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        // Only respond if carousel is in viewport
+        var rect = container.getBoundingClientRect();
+        if (rect.top > window.innerHeight || rect.bottom < 0) return;
+        if (e.key === 'ArrowLeft') fadeCarousel(-1);
+        if (e.key === 'ArrowRight') fadeCarousel(1);
     });
 }
 
-function scrollCarousel(dir) {
-    const container = $('#concepts-carousel');
+function goToSlide(target) {
+    if (_carouselAnimating) return;
+    var container = $('#concepts-carousel');
     if (!container) return;
-    const scrollAmount = container.clientWidth + 20;
-    container.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
+    var slides = container.querySelectorAll('.fade-slide');
+    var total = slides.length;
+    if (target === _carouselIdx || target < 0 || target >= total) return;
+
+    var dir = target > _carouselIdx ? 1 : -1;
+    _carouselAnimating = true;
+
+    var current = slides[_carouselIdx];
+    var next = slides[target];
+
+    // Exit current
+    current.classList.remove('active');
+    current.classList.add(dir > 0 ? 'exit-left' : 'exit-right');
+
+    // Prepare next
+    next.style.transform = dir > 0 ? 'translateX(30px)' : 'translateX(-30px)';
+    next.style.opacity = '0';
+    next.classList.remove('exit-left', 'exit-right');
+
+    // Force reflow
+    void next.offsetWidth;
+
+    // Animate in
+    next.classList.add('active');
+    next.style.transform = '';
+    next.style.opacity = '';
+
+    _carouselIdx = target;
+    updateCarouselUI(total);
+
+    setTimeout(function() {
+        current.classList.remove('exit-left', 'exit-right');
+        _carouselAnimating = false;
+    }, 500);
+}
+
+function fadeCarousel(dir) {
+    var container = $('#concepts-carousel');
+    if (!container) return;
+    var total = container.querySelectorAll('.fade-slide').length;
+    var target = _carouselIdx + dir;
+    if (target < 0) target = total - 1;
+    if (target >= total) target = 0;
+    goToSlide(target);
+}
+
+function updateCarouselUI(total) {
+    // Update counter
+    var counter = $('#carousel-counter');
+    if (counter) {
+        var num = String(_carouselIdx + 1).padStart(2, '0');
+        counter.textContent = num + ' / ' + String(total).padStart(2, '0');
+    }
+    // Update dots
+    var dots = document.querySelectorAll('#carousel-indicators .carousel-dot');
+    dots.forEach(function(dot, i) {
+        if (i === _carouselIdx) dot.classList.add('active');
+        else dot.classList.remove('active');
+    });
 }
 
 initCarousel();
