@@ -34,11 +34,40 @@ body.game-started .logo { opacity:1; }
   50% { transform:scale(1.08); opacity:1; }
 }
 
-.hero-title { font-size:32px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px; color:#111; }
-.hero-subtitle { font-size:15px; color:rgba(0,0,0,0.45); line-height:1.6; margin-bottom:36px; }
+/* Hero title — Wordle-style tile reveal */
+.hero-title { margin-bottom:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.title-row { display:flex; gap:5px; justify-content:center; }
+.title-tile {
+  width:46px; height:46px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:24px; font-weight:700; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-transform:uppercase; border-radius:6px; color:#fff;
+  /* Start hidden, flip in via animation */
+  opacity:0; transform:rotateX(90deg) scale(0.8);
+  animation: titleTileFlip 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.title-tile.tt-green  { background:#1a5c2a; }
+.title-tile.tt-yellow { background:#7a5c00; }
+.title-tile.tt-grey   { background:#787c7e; }
+
+@keyframes titleTileFlip {
+  0%   { opacity:0; transform:rotateX(90deg) scale(0.8); }
+  50%  { opacity:1; transform:rotateX(-10deg) scale(1.05); }
+  100% { opacity:1; transform:rotateX(0deg) scale(1); }
+}
+
+/* Bounce after all tiles revealed */
+.title-tile { animation: titleTileFlip 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                          titleTileBounce 0.4s ease 2.4s both; }
+@keyframes titleTileBounce {
+  0%, 100% { transform:translateY(0); }
+  50%      { transform:translateY(-6px); }
+}
+.hero-subtitle { font-size:15px; color:rgba(0,0,0,0.45); line-height:1.6; margin-bottom:36px; opacity:0; animation: heroFadeIn 0.6s ease 2.3s forwards; }
+.hero-hints { opacity:0; animation: heroFadeIn 0.5s ease 2.7s forwards; }
+@keyframes heroFadeIn { to { opacity:1; } }
 
 /* Hero input */
-.hero-input-wrap { display:flex; align-items:center; gap:0; background:#fff; border:2px solid rgba(0,0,0,0.1); border-radius:14px; padding:4px 4px 4px 0; transition: border-color 0.2s, box-shadow 0.2s; max-width:420px; margin:0 auto; }
+.hero-input-wrap { display:flex; align-items:center; gap:0; background:#fff; border:2px solid rgba(0,0,0,0.1); border-radius:14px; padding:4px 4px 4px 0; transition: border-color 0.2s, box-shadow 0.2s; max-width:420px; margin:0 auto; opacity:0; animation: heroFadeIn 0.6s ease 2.5s forwards; }
 .hero-input-wrap:focus-within { border-color:#111; box-shadow:0 0 0 4px rgba(0,0,0,0.05); }
 .hero-input-wrap input { flex:1; border:none; outline:none; font-size:18px; font-family:monospace; padding:14px 20px; background:transparent; letter-spacing:2px; text-transform:uppercase; }
 .hero-input-wrap input::placeholder { text-transform:none; letter-spacing:0; font-size:15px; color:rgba(0,0,0,0.25); }
@@ -87,6 +116,11 @@ body.game-started .logo { opacity:1; }
 
 /* Hero return — smooth elastic entrance */
 .hero.returning { animation: heroReturn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.hero.returning .title-tile { animation: titleTileFlip 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                                          titleTileBounce 0.4s ease 2.4s both; }
+.hero.returning .hero-subtitle { animation: heroFadeIn 0.5s ease 1.8s forwards; }
+.hero.returning .hero-input-wrap { animation: heroFadeIn 0.5s ease 2.0s forwards; }
+.hero.returning .hero-hints { animation: heroFadeIn 0.4s ease 2.2s forwards; }
 @keyframes heroReturn {
   0%   { opacity:0; transform:translateY(30px) scale(0.96); }
   100% { opacity:1; transform:translateY(0) scale(1); }

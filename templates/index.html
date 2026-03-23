@@ -22,14 +22,30 @@
   <!-- Hero / center input (visible before game) -->
   <div class="hero" id="hero">
     <div class="hero-content">
-      <div class="hero-grid-icon">
-        <div class="hero-cell"></div>
-        <div class="hero-cell hc-green"></div>
-        <div class="hero-cell"></div>
-        <div class="hero-cell hc-yellow"></div>
-        <div class="hero-cell"></div>
-      </div>
-      <h1 class="hero-title">CSP Wordle Solver</h1>
+      <!-- Title tiles serve as the grid icon now -->
+      <h1 class="hero-title">
+        <span class="title-row">
+          <span class="title-tile tt-green" style="animation-delay:0.3s">C</span>
+          <span class="title-tile tt-grey" style="animation-delay:0.42s">S</span>
+          <span class="title-tile tt-green" style="animation-delay:0.54s">P</span>
+        </span>
+        <span class="title-row">
+          <span class="title-tile tt-green" style="animation-delay:0.7s">W</span>
+          <span class="title-tile tt-yellow" style="animation-delay:0.82s">O</span>
+          <span class="title-tile tt-green" style="animation-delay:0.94s">R</span>
+          <span class="title-tile tt-grey" style="animation-delay:1.06s">D</span>
+          <span class="title-tile tt-green" style="animation-delay:1.18s">L</span>
+          <span class="title-tile tt-yellow" style="animation-delay:1.30s">E</span>
+        </span>
+        <span class="title-row">
+          <span class="title-tile tt-green" style="animation-delay:1.5s">S</span>
+          <span class="title-tile tt-green" style="animation-delay:1.62s">O</span>
+          <span class="title-tile tt-yellow" style="animation-delay:1.74s">L</span>
+          <span class="title-tile tt-green" style="animation-delay:1.86s">V</span>
+          <span class="title-tile tt-grey" style="animation-delay:1.98s">E</span>
+          <span class="title-tile tt-green" style="animation-delay:2.10s">R</span>
+        </span>
+      </h1>
       <p class="hero-subtitle">Watch AI solve Wordle using constraint satisfaction, entropy maximization, and
         backtracking search</p>
       <div class="hero-input-wrap" id="hero-input-wrap">
