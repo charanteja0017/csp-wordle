@@ -97,7 +97,7 @@ python app.py
 
 | Name | Department |
 |------|-----------|
-| [Name 1] | [Dept] |
-| [Name 2] | [Dept] |
-| [Name 3] | [Dept] |
-| [Name 4] | [Dept] |
+| [ Charan Teja Pampana | AI Department |
+| Arkoti Charan Teja| AI Department |
+| Arun Kumar Pucha| AI Department |
+| Ravindra Mina | AI Department |
